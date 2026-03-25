@@ -1,11 +1,12 @@
 <script lang="ts">
 	import PomodoroTimer from './PomodoroTimer.svelte';
 </script>
+
 <svelte:head>
-    <title>Pomodoro Timer</title>
+	<title>Pomodoro Timer</title>
 </svelte:head>
 <main>
-	<PomodoroTimer/>
+	<PomodoroTimer />
 </main>
 
 <style>
@@ -14,7 +15,7 @@
 		align-items: center;
 		justify-content: center;
 		min-height: 95vh;
-		background-color: hsl(var(--background));
+		background-color: var(--background);
 		font-family: 'Inter', system-ui, sans-serif;
 	}
-</style>
+</style>  

@@ -9,9 +9,10 @@
 {@render children()}
 
 <style>
-	:root {
+	:global(:root) {
 		--background: hsl(210 40% 98%);
 		--foreground: hsl(222 47% 11%);
+		--card: hsl(0 0% 100%);
 		--border: hsl(214 32% 91%);
 
 		--primary: hsl(221 83% 53%);
@@ -24,15 +25,5 @@
 
 		--radius: 0.5rem;
 	}
-	*,
-	*::before,
-	*::after {
-		box-sizing: border-box;
-	}
 
-	body {
-		margin: 0;
-		padding: 0;
-		 
-	}
 </style>

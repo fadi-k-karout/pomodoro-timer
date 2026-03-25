@@ -10,7 +10,14 @@
 		return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 	});
 
+	$effect(() => {
+		return () => {
+			if (intervalId) clearInterval(intervalId);
+		};
+	});
+
 	function toggleTimer() {
+        clearInterval(intervalId);  
 		isRunning = !isRunning;
 
 		if (isRunning) {
@@ -54,8 +61,8 @@
 		width: 100%;
 		max-width: 450px;
 		padding: 3rem;
-		background-color: hsl(var(--card));
-		border: 1px solid hsl(var(--border));
+		background-color: var(--card);
+		border: 1px solid var(--border);
 		border-radius: calc(var(--radius) * 2);
 		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 	}
