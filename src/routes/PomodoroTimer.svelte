@@ -52,6 +52,7 @@
 	 */
 	function setTimer(minutes: TimeOption) {
 		if (!TIME_OPTIONS.includes(minutes)) return;
+		if (startMinutes === minutes) return; // No change needed
 
 		stop();
 		startMinutes = minutes;
