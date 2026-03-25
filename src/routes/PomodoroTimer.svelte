@@ -1,7 +1,9 @@
 <script lang="ts">
-	let startMinutes: number = 25;
-	let seconds: number = $state(60 * startMinutes);
-	let isRunning: boolean = $state(false);
+	const TIME_OPTIONS = [15, 25, 45] as const;
+	type TimeOption = (typeof TIME_OPTIONS)[number];
+	let startMinutes = $state(25);
+	let seconds = $derived(60 * startMinutes);
+	let isRunning = $state(false);
 	let intervalId: number | undefined;
 
 	const displayTime = $derived.by(() => {
@@ -17,7 +19,7 @@
 	});
 
 	function toggleTimer() {
-        clearInterval(intervalId);  
+		clearInterval(intervalId);
 		isRunning = !isRunning;
 
 		if (isRunning) {
@@ -43,9 +45,29 @@
 		stop();
 		seconds = 60 * startMinutes;
 	}
+
+	/**
+	 * Sets the timer duration.
+	 * @param minutes - The duration in minutes.
+	 */
+	function setTimer(minutes: TimeOption) {
+		if (!TIME_OPTIONS.includes(minutes)) return;
+
+		stop();
+		startMinutes = minutes;
+	}
 </script>
 
 <div class="pomodoro-container">
+	<div class="tabs-container">
+		{#each TIME_OPTIONS as minutes (minutes)}
+			<button
+				onclick={() => setTimer(minutes)}
+				class="tab-btn"
+				class:active={startMinutes === minutes}>{minutes} min</button
+			>
+		{/each}
+	</div>
 	<h1 class="timer-display">{displayTime}</h1>
 	<div class="controls">
 		<button onclick={toggleTimer} class="primary-btn"> {isRunning ? 'Pause' : 'Start'}</button>
@@ -65,6 +87,36 @@
 		border: 1px solid var(--border);
 		border-radius: calc(var(--radius) * 2);
 		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+	}
+	.tabs-container {
+		display: flex;
+		background-color: var(--secondary); /* A muted light gray/offset color */
+		padding: 4px;
+		border-radius: var(--radius);
+		gap: 4px;
+		margin-bottom: 2rem;
+	}
+
+	.tab-btn {
+		flex: 1; /* Makes all tabs equal width */
+		padding: 8px 16px;
+		border: none;
+		background: transparent;
+		color: var(--secondary-foreground);
+		font-weight: 500;
+		cursor: pointer;
+		border-radius: calc(var(--radius) - 2px);
+		transition: all 0.2s ease;
+	}
+
+	.tab-btn.active {
+		background-color: var(--background); /* Matches the card/page background */
+		color: var(--primary);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	}
+
+	.tab-btn:hover:not(.active) {
+		background-color: rgba(0, 0, 0, 0.05);
 	}
 	.timer-display {
 		font-size: 6rem;
