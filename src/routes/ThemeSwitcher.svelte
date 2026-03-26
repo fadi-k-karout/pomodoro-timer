@@ -27,7 +27,7 @@
 </script>
 
 <div class="tooltip">
-	<button onclick={toggle} type="button" aria-label="Toggle Theme">
+	<button id="theme-switcher" onclick={toggle} type="button" aria-label="Toggle Theme">
 		{#if isDark}
 			<MoonStar />
 		{:else}
@@ -38,16 +38,16 @@
 </div>
 
 <style>
-	button {
-		display: flex; 
+	#theme-switcher {
+		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 0.8rem; 
+		padding: 0.8rem;
 		cursor: pointer;
-		border-radius: 999px; 
-		border: 1px solid var(--text-color);
-		background: var(--bg-color);
-		color: var(--text-color);
+		border-radius: 999px;
+		border: 1px solid transparent;
+		background-color: transparent;
+		color: var(--foreground);
 		transition: all 0.2s ease;
 	}
 

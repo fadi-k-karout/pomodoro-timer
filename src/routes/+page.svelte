@@ -38,7 +38,6 @@
 		justify-content: space-between; /* Pushes Logo left, Switcher right */
 		padding: 1rem 2rem;
 		margin-bottom: 100px;
-		border-bottom: 1px solid var(--text-color);
 		transition: background-color 0.3s ease;
 	}
 

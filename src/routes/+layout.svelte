@@ -64,9 +64,6 @@
 	:global(body) {
 		min-height: 95dvh;
 		background: var(--background-gradient);
-		transition:
-			background-color 0.3s ease,
-			color 0.3s ease;
 	}
 	:global(*) {
 		box-sizing: border-box;

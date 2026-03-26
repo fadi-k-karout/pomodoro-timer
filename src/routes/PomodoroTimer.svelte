@@ -80,7 +80,7 @@
 				<Play /> Play
 			{/if}
 		</button>
-		<button onclick={resetTimer} class="secondary-btn">
+		<button onclick={resetTimer} type="button" class="secondary-btn">
 			<RotateCcw /> Reset
 		</button>
 	</div>
@@ -90,6 +90,7 @@
 	.pomodoro-container {
 		display: flex;
 		flex-direction: column;
+		width: 520px;
 		max-width: 100%;
 		align-items: center;
 		padding: 3rem;
