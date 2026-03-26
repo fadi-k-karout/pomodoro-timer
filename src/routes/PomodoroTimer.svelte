@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Play, Pause, RotateCcw } from '@lucide/svelte';
 	const TIME_OPTIONS = [15, 25, 45] as const;
 	type TimeOption = (typeof TIME_OPTIONS)[number];
 	let startMinutes = $state(25);
@@ -64,6 +65,7 @@
 		{#each TIME_OPTIONS as minutes (minutes)}
 			<button
 				onclick={() => setTimer(minutes)}
+				type="button"
 				class="tab-btn"
 				class:active={startMinutes === minutes}>{minutes} min</button
 			>
@@ -71,8 +73,16 @@
 	</div>
 	<h1 class="timer-display">{displayTime}</h1>
 	<div class="controls">
-		<button onclick={toggleTimer} class="primary-btn"> {isRunning ? 'Pause' : 'Start'}</button>
-		<button onclick={resetTimer} class="secondary-btn">Reset</button>
+		<button onclick={toggleTimer} type="button" class="primary-btn">
+			{#if isRunning}
+				<Pause /> Pause
+			{:else}
+				<Play /> Play
+			{/if}
+		</button>
+		<button onclick={resetTimer} type="button" class="secondary-btn">
+			<RotateCcw /> Reset
+		</button>
 	</div>
 </div>
 
@@ -80,13 +90,14 @@
 	.pomodoro-container {
 		display: flex;
 		flex-direction: column;
+		width: 520px;
+		max-width: 100%;
 		align-items: center;
-		width: 100%;
-		max-width: 450px;
 		padding: 3rem;
 		background-color: var(--card);
 		border: 1px solid var(--border);
 		border-radius: calc(var(--radius) * 2);
+		box-sizing: border-box;
 		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 	}
 	.tabs-container {
@@ -99,7 +110,7 @@
 	}
 
 	.tab-btn {
-		flex: 1; /* Makes all tabs equal width */
+		flex: 1;
 		padding: 8px 16px;
 		border: none;
 		background: transparent;
@@ -107,7 +118,7 @@
 		font-weight: 500;
 		cursor: pointer;
 		border-radius: calc(var(--radius) - 2px);
-		transition: all 0.2s ease;
+		transition: all 0.1s ease;
 	}
 
 	.tab-btn.active {
@@ -117,10 +128,13 @@
 	}
 
 	.tab-btn:hover:not(.active) {
-		background-color: rgba(0, 0, 0, 0.05);
+		background-color: var(--muted-background);
+		color: var(--muted-foreground);
 	}
+
 	.timer-display {
-		font-size: 6rem;
+		color: var(--foreground);
+		font-size: clamp(3rem, 10vw, 6rem);
 		font-weight: 800;
 		font-variant-numeric: tabular-nums; /* Prevents text jumping while counting */
 		margin: 0;
@@ -135,11 +149,21 @@
 
 	.primary-btn,
 	.secondary-btn {
-		padding: 12px 32px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 10px;
+
+		padding: 10px 30px;
 		font-size: 1.1rem;
 		font-weight: 600;
+
+		border-radius: 999px;
+		border: 2px solid transparent;
+
 		cursor: pointer;
-		transition: transform 0.1s;
+		transition: all 0.2s ease;
+		user-select: none;
 	}
 
 	.primary-btn {
