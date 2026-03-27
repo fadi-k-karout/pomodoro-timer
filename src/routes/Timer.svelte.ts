@@ -7,7 +7,7 @@ export function createTimer(initialMinutes: TimeOption = 25) {
 	let isRunning = $state(false);
 	let elapsedSeconds = $state(0);
 	let startTime = 0;
-	let baseElapsed = 0;
+	let baseElapsedMs = 0;
 
 	const totalSeconds = $derived(startMinutes * 60);
 	const remainingSeconds = $derived(Math.max(0, totalSeconds - elapsedSeconds));
@@ -20,8 +20,13 @@ export function createTimer(initialMinutes: TimeOption = 25) {
 
 	$effect(() => {
 		if (!isRunning) {
-			// When we pause, we save our progress to baseElapsed
-			untrack(() => (baseElapsed = elapsedSeconds));
+			// When we pause, commit the exact elapsed time with sub-second precision
+			untrack(() => {
+				if (startTime > 0) {
+					baseElapsedMs += performance.now() - startTime;
+					startTime = 0;
+				}
+			});
 			return;
 		}
 
@@ -32,7 +37,18 @@ export function createTimer(initialMinutes: TimeOption = 25) {
 			const now = performance.now();
 			// Calculate total elapsed time:
 			// Progress before this start + (Current time - Start time)
-			const totalElapsedMs = baseElapsed * 1000 + (now - startTime);
+			const totalElapsedMs = baseElapsedMs + (now - startTime);
+			const sessionLengthMs = totalSeconds * 1000;
+
+			// Check if session is complete
+			if (totalElapsedMs >= sessionLengthMs) {
+				clearInterval(id);
+				untrack(() => {
+					isRunning = false;
+					elapsedSeconds = totalSeconds; // Set to final session length so UI shows 00:00
+				});
+				return;
+			}
 
 			untrack(() => {
 				elapsedSeconds = Math.floor(totalElapsedMs / 1000);
@@ -87,7 +103,7 @@ export function createTimer(initialMinutes: TimeOption = 25) {
 		reset: () => {
 			isRunning = false;
 			elapsedSeconds = 0;
-			baseElapsed = 0;
+			baseElapsedMs = 0;
 		},
 
 		/** * Reconfigures the timer with a new preset duration.
