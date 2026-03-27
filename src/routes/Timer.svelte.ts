@@ -6,6 +6,8 @@ export function createTimer(initialMinutes: TimeOption = 25) {
 	let startMinutes = $state(initialMinutes);
 	let isRunning = $state(false);
 	let elapsedSeconds = $state(0);
+	let startTime = 0;
+	let baseElapsed = 0;
 
 	const totalSeconds = $derived(startMinutes * 60);
 	const remainingSeconds = $derived(Math.max(0, totalSeconds - elapsedSeconds));
@@ -16,22 +18,27 @@ export function createTimer(initialMinutes: TimeOption = 25) {
 		return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 	});
 
-	// The main effect that manages the timer's ticking logic.
 	$effect(() => {
-		if (!isRunning) return;
-
-		const isTimeOver = remainingSeconds <= 0;
-		if (isTimeOver) {
-			isRunning = false;
-			alert('Time is up!');
+		if (!isRunning) {
+			// When we pause, we save our progress to baseElapsed
+			untrack(() => (baseElapsed = elapsedSeconds));
 			return;
 		}
 
+		// Capture the exact moment we started/resumed
+		startTime = performance.now();
+
 		const id = setInterval(() => {
-			// We use untrack so the effect doesn't re-run
-			// every time elapsedSeconds changes.
-			untrack(() => elapsedSeconds++);
-		}, 1000);
+			const now = performance.now();
+			// Calculate total elapsed time:
+			// Progress before this start + (Current time - Start time)
+			const totalElapsedMs = baseElapsed * 1000 + (now - startTime);
+
+			untrack(() => {
+				elapsedSeconds = Math.floor(totalElapsedMs / 1000);
+			});
+		}, 500);
+
 		return () => clearInterval(id);
 	});
 
@@ -80,6 +87,7 @@ export function createTimer(initialMinutes: TimeOption = 25) {
 		reset: () => {
 			isRunning = false;
 			elapsedSeconds = 0;
+			baseElapsed = 0;
 		},
 
 		/** * Reconfigures the timer with a new preset duration.
