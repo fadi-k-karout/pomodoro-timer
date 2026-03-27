@@ -6,6 +6,8 @@ export function createTimer(initialMinutes: TimeOption = 25) {
 	let startMinutes = $state(initialMinutes);
 	let isRunning = $state(false);
 	let elapsedSeconds = $state(0);
+	let startTime = 0;
+	let baseElapsedMs = 0;
 
 	const totalSeconds = $derived(startMinutes * 60);
 	const remainingSeconds = $derived(Math.max(0, totalSeconds - elapsedSeconds));
@@ -16,22 +18,58 @@ export function createTimer(initialMinutes: TimeOption = 25) {
 		return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 	});
 
-	// The main effect that manages the timer's ticking logic.
-	$effect(() => {
-		if (!isRunning) return;
+	function reset() {
+		isRunning = false;
+		elapsedSeconds = 0;
+		baseElapsedMs = 0;
+		startTime = 0;
+	}
 
-		const isTimeOver = remainingSeconds <= 0;
-		if (isTimeOver) {
-			isRunning = false;
-			alert('Time is up!');
+	$effect(() => {
+		if (!isRunning) {
+			// When we pause, we save our progress to baseElapsedMs
+			untrack(() => {
+				if (startTime > 0) {
+					baseElapsedMs += performance.now() - startTime;
+					startTime = 0;
+				}
+			});
 			return;
 		}
 
+		// Capture the exact moment we started/resumed
+		startTime = performance.now();
+
+		const tick = () => {
+			const now = performance.now();
+			// Calculate total elapsed time:
+			// Progress before this start + (Current time - Start time)
+			const totalElapsedMs = baseElapsedMs + (now - startTime);
+			const sessionLengthMs = totalSeconds * 1000;
+			if (totalElapsedMs >= sessionLengthMs) {
+				clearInterval(id);
+				untrack(() => {
+					startTime = 0;
+					elapsedSeconds = totalSeconds;
+					baseElapsedMs = 0;
+					isRunning = false;
+					alert('Time is up!');
+				});
+
+				return true;
+			}
+
+			untrack(() => {
+				elapsedSeconds = Math.floor(totalElapsedMs / 1000);
+			});
+			return false;
+		};
+
 		const id = setInterval(() => {
-			// We use untrack so the effect doesn't re-run
-			// every time elapsedSeconds changes.
-			untrack(() => elapsedSeconds++);
-		}, 1000);
+			const shouldStop = tick();
+			if (shouldStop) clearInterval(id);
+		}, 100);
+
 		return () => clearInterval(id);
 	});
 
@@ -71,25 +109,25 @@ export function createTimer(initialMinutes: TimeOption = 25) {
 		 * Internal effects handle the interval cleanup automatically when paused.
 		 */
 		toggle: () => {
+			if (!isRunning && elapsedSeconds === 0 && baseElapsedMs === 0) {
+				elapsedSeconds = 1;
+				baseElapsedMs = 1000;
+			}
 			isRunning = !isRunning;
 		},
 
 		/** * Halts the timer and returns **elapsedSeconds** to 0.
 		 * Does not change the **startMinutes** configuration.
 		 */
-		reset: () => {
-			isRunning = false;
-			elapsedSeconds = 0;
-		},
+		reset,
 
 		/** * Reconfigures the timer with a new preset duration.
 		 * Automatically stops the current timer and resets progress to 0.
 		 * @param mins - A valid duration from the **TimeOption** type.
 		 */
 		set: (mins: TimeOption) => {
+			reset();
 			startMinutes = mins;
-			elapsedSeconds = 0;
-			isRunning = false;
 		}
 	};
 }
